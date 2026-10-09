@@ -1,0 +1,41 @@
+let audioModelURL = 'https://teachablemachine.withgoogle.com/models/fWJVGqz4x/';
+
+let classifier, label = "Speak Password...", confidence = 0.0;
+let unlocked = false;
+
+function preload() {
+  classifier = ml5.soundClassifier(audioModelURL + 'model.json', { probabilityThreshold: 0.85 });
+}
+
+function setup() {
+  createCanvas(640, 480);
+  classifier.classify(gotResult);
+}
+
+function gotResult(err, res) {
+  if (!err && res.length > 0) {
+    label = res[0].label;
+    confidence = res[0].confidence;
+    if (label.toLowerCase().includes("sesame") || label.toLowerCase().includes("open")) {
+      unlocked = true;
+      setTimeout(() => { unlocked = false; }, 4000);
+    }
+  }
+}
+
+function draw() {
+  if (unlocked) {
+    background(0, 180, 100);
+    fill(255); textAlign(CENTER, CENTER); textSize(36);
+    text("🔓 ACCESS GRANTED", width / 2, height / 2 - 20);
+    textSize(22); text("Vault Door Unlocked", width / 2, height / 2 + 30);
+  } else {
+    background(180, 40, 40);
+    fill(255); textAlign(CENTER, CENTER); textSize(36);
+    text("🔒 SYSTEM LOCKED", width / 2, height / 2 - 20);
+    textSize(22); text("Speak Authorized Voice Passcode", width / 2, height / 2 + 30);
+  }
+
+  fill(0, 0, 0, 140); rect(40, height - 80, width - 80, 50, 6);
+  fill(255); textSize(18); text("Detected: " + label + " (" + floor(confidence * 100) + "%)", width / 2, height - 55);
+}
